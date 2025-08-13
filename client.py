@@ -6,15 +6,57 @@ from threading import Thread
 # ---ПУГАМЕ НАЛАШТУВАННЯ ---
 WIDTH, HEIGHT = 800, 600
 init()
+mixer.init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
 display.set_caption("Пінг-Понг")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ---СЕРВЕР ---
 def connect_to_server():
     while True:
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('localhost', 8080)) # ---- Підключення до сервера
+            client.connect(('localhost', 12345)) # ---- Підключення до сервера
             buffer = ""
             game_state = {}
             my_id = int(client.recv(24).decode())
@@ -38,11 +80,34 @@ def receive():
             break
 
 # --- ШРИФТИ ---
-font_win = font.Font(None, 72)
-font_main = font.Font(None, 36)
+font_win = font.Font("Modak-Regular.ttf", 72)
+font_main = font.Font("Modak-Regular.ttf", 36)
 # --- ЗОБРАЖЕННЯ ----
 
+ball = image.load("ball.png")
+ball = transform.scale(ball, (50,50))
+
+
+rocket1 = image.load("rocket1.png")
+rocket1 = transform.scale(rocket1, (100,50))
+
+rocket2 = image.load("racket2.png")
+rocket2 = transform.scale(rocket2, (100,50))
+
+
+
+background_image = image.load(r"img\background.png")
+background_image = transform.scale(background_image,(WIDTH,HEIGHT))
+
+
+
+
+
+
+
 # --- ЗВУКИ ---
+sound_wall_hit = mixer.Sound("wallhit.mp3")
+sound_ball_hit = mixer.Sound("ballhit.mp3")
 
 # --- ГРА ---
 game_over = False
@@ -72,9 +137,9 @@ while True:
                 you_winner = False
 
         if you_winner:
-            text = "Ти переміг!"
+            text = "YOU WIN"
         else:
-            text = "Пощастить наступним разом!"
+            text = "Better luck next time"
 
         win_text = font_win.render(text, True, (255, 215, 0))
         text_rect = win_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
@@ -88,23 +153,29 @@ while True:
         continue  # Блокує гру після перемоги
 
     if game_state:
-        screen.fill((30, 30, 30))
-        draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
-        draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
-        draw.circle(screen, (255, 255, 255), (game_state['ball']['x'], game_state['ball']['y']), 10)
+        #screen.fill((30, 30, 30))
+        screen.blit(background_image,(0,0))
+        #draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
+        screen.blit(rocket1,(20, game_state['paddles']['0'], 20, 100))
+        screen.blit(rocket2,(WIDTH - 40, game_state['paddles']['1'], 20, 100))
+        #draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
+        #draw.circle(screen, (255, 255, 255), (game_state['ball']['x'], game_state['ball']['y']), 10)
+        screen.blit(ball, (game_state['ball']['x'], game_state['ball']['y']))
         score_text = font_main.render(f"{game_state['scores'][0]} : {game_state['scores'][1]}", True, (255, 255, 255))
         screen.blit(score_text, (WIDTH // 2 -25, 20))
 
         if game_state['sound_event']:
             if game_state['sound_event'] == 'wall_hit':
                 # звук відбиття м'ячика від стін
-                pass
+                sound_wall_hit.play()
+
+                
             if game_state['sound_event'] == 'platform_hit':
                 # звук відбиття м'ячика від платформи
-                pass
+                sound_ball_hit.play()
 
     else:
-        wating_text = font_main.render(f"Очікування гравців...", True, (255, 255, 255))
+        wating_text = font_main.render(f"Waiting players...", True, (255, 255, 255))
         screen.blit(wating_text, (WIDTH // 2 - 25, 20))
 
     display.update()
